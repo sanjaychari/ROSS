@@ -9,6 +9,7 @@
 #include <inttypes.h>
 
 #define INST_MAX_LENGTH 4096
+#define EVENT_BUCKETS_TOTAL 64
 
 /* st-stats-buffer.c */
 #define st_buffer_free_space(buf) (buf->size - buf->count)
@@ -159,6 +160,12 @@ struct st_lp_stats{
     unsigned int s_nread_network;
     tw_clock s_process_event;
     float efficiency;
+
+    // Individual stats per event type. Note that event types are model
+    // dependent, thus models have to decide how to tag each event.
+    // This is done via the lp->event_bucket variable
+    unsigned int s_nevents_processed[EVENT_BUCKETS_TOTAL];
+    tw_clock s_process_events[EVENT_BUCKETS_TOTAL];
 };
 
 void st_collect_engine_data(tw_pe *me, int col_type);

@@ -369,6 +369,7 @@ struct tw_lp {
     struct st_model_types *model_types;
     struct st_lp_stats *lp_stats;
     struct st_lp_stats *last_stats[3];
+    unsigned int event_bucket; // It will determine in which bucket the current event processing or commit will be stored
 
     /* tw_suspend variables */
     tw_event    *suspend_event;

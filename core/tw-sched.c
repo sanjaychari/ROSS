@@ -240,8 +240,10 @@ static void tw_sched_batch(tw_pe * me) {
     // instrumentation
     ckp->kp_stats->s_nevent_processed++;
     clp->lp_stats->s_nevent_processed++;
+    clp->lp_stats->s_nevents_processed[clp->event_bucket]++;
     end = tw_clock_read();
 	clp->lp_stats->s_process_event += end - start;
+	clp->lp_stats->s_process_events[clp->event_bucket] += end - start;
 	me->stats.s_event_process += end - start;
 
 	/* We ran out of events while processing this event.  We
@@ -388,7 +390,11 @@ static void tw_sched_batch_realtime(tw_pe * me) {
     // instrumentation
     ckp->kp_stats->s_nevent_processed++;
     clp->lp_stats->s_nevent_processed++;
-	me->stats.s_event_process += tw_clock_read() - start;
+    clp->lp_stats->s_nevents_processed[clp->event_bucket]++;
+    tw_clock const total_event_process = tw_clock_read() - start;
+    clp->lp_stats->s_process_event += total_event_process;
+    clp->lp_stats->s_process_events[clp->event_bucket] += total_event_process;
+	me->stats.s_event_process += total_event_process;
 
 	/* We ran out of events while processing this event.  We
 	 * cannot continue without doing GVT and fossil collect.
@@ -556,6 +562,7 @@ void tw_scheduler_sequential(tw_pe * me) {
         }
         tw_clock const total_event_process = tw_clock_read() - event_start;
         clp->lp_stats->s_process_event += total_event_process;
+        clp->lp_stats->s_process_events[clp->event_bucket] += total_event_process;
         me->stats.s_event_process += total_event_process;
 
         if (me->cev_abort){
@@ -566,6 +573,7 @@ void tw_scheduler_sequential(tw_pe * me) {
         // instrumentation
         ckp->kp_stats->s_nevent_processed++;
         clp->lp_stats->s_nevent_processed++;
+        clp->lp_stats->s_nevents_processed[clp->event_bucket]++;
         tw_event_free(me, cev);
 
         if(g_st_rt_sampling &&
@@ -691,7 +699,11 @@ void tw_scheduler_conservative(tw_pe * me) {
             // instrumentation
             ckp->kp_stats->s_nevent_processed++;
             clp->lp_stats->s_nevent_processed++;
-            me->stats.s_event_process += tw_clock_read() - start;
+            clp->lp_stats->s_nevents_processed[clp->event_bucket]++;
+            tw_clock const total_event_process = tw_clock_read() - start;
+            me->stats.s_event_process += total_event_process;
+            clp->lp_stats->s_process_event += total_event_process;
+            clp->lp_stats->s_process_events[clp->event_bucket] += total_event_process;
 
             if (me->cev_abort) {
                 tw_error(TW_LOC, "insufficient event memory");

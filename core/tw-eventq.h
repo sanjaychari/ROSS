@@ -84,6 +84,7 @@ tw_eventq_push_list(tw_eventq * q, tw_event * h, tw_event * t, long cnt)
         tw_clock const process_time = tw_clock_read() - event_start;
         clp->lp_stats->s_process_event += process_time;
 	    g_tw_pe->stats.s_event_process += process_time;
+        clp->lp_stats->s_process_events[clp->event_bucket] += process_time;
         tw_free_output_messages(e, 1);
 
         if (e->delta_buddy) {

@@ -261,9 +261,23 @@ tw_all_lp_stats(tw_pe *me)
     for(unsigned int i = 0; i < g_tw_nlp + g_st_analysis_nlp; i++)
     {
         tw_lp *lp = tw_getlp(i);
-	fprintf(pe_log_file, "LPID: %lu\t-  Processing time: %e\t-  Events processed: %u\n",
+        fprintf(pe_log_file, "LPID: %lu\t-  Processing time: %e\t-  Events processed: %u\n",
                 lp->gid,
                 (double) lp->lp_stats->s_process_event / g_tw_clock_rate,
                 lp->lp_stats->s_nevent_processed);
+        for (unsigned int j = 0; j<EVENT_BUCKETS_TOTAL; j++) {
+            // Only output buckets with data (and in the case of bucket 0, only output if different from lp->lp_stats->s_nevent_processed)
+            if (lp->lp_stats->s_nevents_processed[j]
+                && !(j == 0 && lp->lp_stats->s_nevents_processed[j] == lp->lp_stats->s_nevent_processed)) {
+                fprintf(
+                    pe_log_file,
+                    "LPID: %lu\t-  Bucket: %u\t  Processing time: %e\t-  Events processed: %u\n",
+                    lp->gid,
+                    j,
+                    (double) lp->lp_stats->s_process_events[j] / g_tw_clock_rate,
+                    lp->lp_stats->s_nevents_processed[j]);
+
+            }
+        }
     }
 }
